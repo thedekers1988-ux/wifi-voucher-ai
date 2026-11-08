@@ -3,15 +3,14 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>WIFI VOUCHER AI</title>
-
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#0b1220;color:white;font-family:Arial,sans-serif}
 header{background:#13233b;padding:22px 18px;border-bottom:1px solid #263954}
 h2{margin:0;color:#35b9ff}
-header p{color:#a9bdd5;margin-bottom:0}
+header p{color:#a9bdd5}
 main{padding:16px}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .card{background:#172941;border:1px solid #29415e;border-radius:16px;padding:17px;margin-bottom:14px}
@@ -19,21 +18,20 @@ main{padding:16px}
 .number{font-size:27px;font-weight:bold;margin-top:9px}
 h3{font-size:18px;margin:0 0 16px}
 .menu{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-button{border:0;border-radius:10px;padding:15px 8px;background:#1769c2;color:white;font-weight:bold;font-size:14px;cursor:pointer}
-button:active{background:#0e4e91}
+button{border:0;border-radius:10px;padding:14px 9px;background:#1769c2;color:white;font-weight:bold;font-size:14px;margin:4px 0}
+button:active{opacity:.7}
 #page{margin-top:15px}
 input{width:100%;padding:14px;margin:7px 0 13px;border-radius:9px;border:1px solid #38516e;background:#0c192a;color:white;font-size:15px}
-.action{width:100%;background:#087eae;margin-top:8px}
+.action{width:100%;background:#087eae}
 .connect{background:#159447}
 .danger{background:#b83232}
 .secondary{background:#435875}
-.router-item{background:#0c192a;border:1px solid #38516e;padding:13px;border-radius:10px;margin-top:10px}
+.router-item{background:#0c192a;border:1px solid #38516e;padding:13px;border-radius:10px;margin-top:12px}
 .router-item p{font-size:13px;color:#a9bdd5;word-break:break-word}
 .status{font-weight:bold;color:#ffc857}
 footer{text-align:center;color:#71849b;font-size:12px;padding:20px}
 </style>
 </head>
-
 <body>
 <header>
 <h2 id="appTitle">WIFI VOUCHER AI</h2>
@@ -41,27 +39,11 @@ footer{text-align:center;color:#71849b;font-size:12px;padding:20px}
 </header>
 
 <main>
-
 <div class="stats">
-<div class="card">
-<small>Router</small>
-<div class="number" id="routers">0</div>
-</div>
-
-<div class="card">
-<small>Voucher</small>
-<div class="number" id="vouchers">0</div>
-</div>
-
-<div class="card">
-<small>Pelanggan</small>
-<div class="number" id="customers">0</div>
-</div>
-
-<div class="card">
-<small>Status</small>
-<div class="number" style="font-size:18px" id="appStatus">Siap</div>
-</div>
+<div class="card"><small>Router</small><div class="number" id="routers">0</div></div>
+<div class="card"><small>Voucher</small><div class="number" id="vouchers">0</div></div>
+<div class="card"><small>Pelanggan</small><div class="number" id="customers">0</div></div>
+<div class="card"><small>Status</small><div class="number" id="appStatus" style="font-size:18px">Siap</div></div>
 </div>
 
 <div class="card">
@@ -79,319 +61,355 @@ footer{text-align:center;color:#71849b;font-size:12px;padding:20px}
 <div class="card" id="page">
 <h3>Selamat Datang</h3>
 <p>WIFI VOUCHER AI siap digunakan.</p>
-<p>Tambahkan router MikroTik untuk memulai pengelolaan WiFi.</p>
+<p>Tambahkan router MikroTik untuk memulai.</p>
 </div>
-
 </main>
 
 <footer>WIFI VOUCHER AI • Versi 1.0</footer>
 
 <script>
-const STORAGE_KEY = "wifi_voucher_routers";
+const KEY="wifi_voucher_routers";
+let routers=[];
+let selectedRouter=-1;
 
-let routers = [];
-let selectedRouter = -1;
-
-function loadRouters(){
-    try{
-        routers = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    }catch(e){
-        routers = [];
-    }
-    updateStats();
+function read(key, fallback=[]){
+ try{return JSON.parse(localStorage.getItem(key)) ?? fallback}
+ catch(e){return fallback}
 }
 
-function saveRouters(){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(routers));
-    updateStats();
+function write(key,value){
+ localStorage.setItem(key,JSON.stringify(value));
+}
+
+function loadRouters(){
+ routers=read(KEY,[]);
+ updateStats();
 }
 
 function updateStats(){
-    document.getElementById("routers").textContent = routers.length;
+ document.getElementById("routers").textContent=routers.length;
+ document.getElementById("customers").textContent=read("wifi_customers",[]).length;
+ document.getElementById("vouchers").textContent=read("wifi_vouchers",[]).length;
 }
 
 function showPage(page){
-    const box = document.getElementById("page");
+ const box=document.getElementById("page");
 
-    if(page === "router"){
-        renderRouter();
-        return;
-    }
+ if(page==="router"){renderRouter();return}
 
-    if(page === "voucher"){
-        box.innerHTML = `
-        <h3>Manajemen Voucher</h3>
-        <p>Fitur pembuatan voucher akan dihubungkan ke MikroTik.</p>
-        <input id="voucherProfile" placeholder="Profile Hotspot">
-        <input id="voucherJumlah" type="number" placeholder="Jumlah Voucher">
-        <input id="voucherHarga" type="number" placeholder="Harga Voucher">
-        <button class="action" onclick="alert('Pembuatan voucher memerlukan koneksi API MikroTik.')">Buat Voucher</button>`;
-        return;
-    }
+ if(page==="voucher"){
+ box.innerHTML=`
+ <h3>🎟️ Manajemen Voucher</h3>
+ <input id="vProfile" placeholder="Nama Profile Hotspot">
+ <input id="vJumlah" type="number" placeholder="Jumlah Voucher">
+ <input id="vHarga" type="number" placeholder="Harga Voucher">
+ <button class="action" onclick="saveVoucher()">Simpan Data Voucher</button>
+ <div id="voucherList"></div>`;
+ renderVouchers();
+ return;
+ }
 
-    if(page === "customer"){
-        box.innerHTML = `
-        <h3>Data Pelanggan</h3>
-        <input id="customerName" placeholder="Nama Pelanggan">
-        <input id="customerPhone" placeholder="Nomor HP">
-        <input id="customerAddress" placeholder="Alamat Pelanggan">
-        <button class="action" onclick="addCustomer()">Tambah Pelanggan</button>
-        <div id="customerList"></div>`;
-        renderCustomers();
-        return;
-    }
+ if(page==="customer"){
+ box.innerHTML=`
+ <h3>👥 Data Pelanggan</h3>
+ <input id="cName" placeholder="Nama Pelanggan">
+ <input id="cPhone" placeholder="Nomor HP">
+ <input id="cAddress" placeholder="Alamat">
+ <button class="action" onclick="addCustomer()">Tambah Pelanggan</button>
+ <div id="customerList"></div>`;
+ renderCustomers();
+ return;
+ }
 
-    if(page === "map"){
-        box.innerHTML = `
-        <h3>🗺️ Peta Pelanggan</h3>
-        <p>Masukkan koordinat lokasi pelanggan.</p>
-        <input id="latitude" placeholder="Koordinat Latitude">
-        <input id="longitude" placeholder="Koordinat Longitude">
-        <button class="action" onclick="saveLocation()">Simpan Lokasi</button>
-        <div id="mapResult"></div>`;
-        return;
-    }
+ if(page==="map"){
+ box.innerHTML=`
+ <h3>🗺️ Peta Pelanggan</h3>
+ <input id="latitude" placeholder="Latitude">
+ <input id="longitude" placeholder="Longitude">
+ <button class="action" onclick="saveLocation()">Simpan Lokasi</button>
+ <div id="mapResult"></div>`;
+ return;
+ }
 
-    if(page === "ai"){
-        box.innerHTML = `
-        <h3>🤖 AI Developer Online</h3>
-        <p>Tuliskan perubahan aplikasi yang Anda inginkan.</p>
-        <input id="aiRequest" placeholder="Contoh: Tambahkan menu laporan">
-        <button class="action" onclick="sendAI()">Kirim Permintaan</button>
-        <p id="aiResult"></p>`;
-        return;
-    }
+ if(page==="ai"){
+ box.innerHTML=`
+ <h3>🤖 AI Developer Online</h3>
+ <p>Masukkan permintaan perubahan aplikasi.</p>
+ <textarea id="aiRequest" style="width:100%;height:100px;background:#0c192a;color:white;padding:12px" placeholder="Contoh: Tambahkan laporan voucher"></textarea>
+ <button class="action" onclick="sendAI()">Kirim Permintaan</button>
+ <p id="aiResult"></p>`;
+ return;
+ }
 
-    if(page === "settings"){
-        box.innerHTML = `
-        <h3>⚙️ Pengaturan</h3>
-        <input id="newAppName" placeholder="Nama Aplikasi">
-        <button class="action" onclick="saveSettings()">Simpan Pengaturan</button>`;
-        return;
-    }
+ if(page==="settings"){
+ box.innerHTML=`
+ <h3>⚙️ Pengaturan</h3>
+ <input id="newAppName" placeholder="Nama Aplikasi">
+ <button class="action" onclick="saveSettings()">Simpan Pengaturan</button>`;
+ document.getElementById("newAppName").value=localStorage.getItem("wifi_app_name")||"WIFI VOUCHER AI";
+ }
 }
 
 /* ROUTER */
 
 function renderRouter(){
-    const box = document.getElementById("page");
-
-    let html = `
-    <h3>📡 Router MikroTik</h3>
-
-    <input id="routerName" placeholder="Nama Router">
-    <input id="routerIP" placeholder="Alamat IP Router">
-    <input id="routerPort" type="number" placeholder="Port API (8728)">
-    <input id="routerUser" placeholder="Username MikroTik">
-    <input id="routerPass" type="password" placeholder="Password MikroTik">
-
-    <button class="action" onclick="saveRouter()">💾 Simpan Router</button>
-
-    <h3 style="margin-top:25px">Daftar Router Tersimpan</h3>
-    <div id="routerList"></div>
-    `;
-
-    box.innerHTML = html;
-    renderRouterList();
+ document.getElementById("page").innerHTML=`
+ <h3>📡 Router MikroTik</h3>
+ <input id="routerName" placeholder="Nama Router">
+ <input id="routerIP" placeholder="Alamat IP Router">
+ <input id="routerPort" type="number" placeholder="Port API (8728)">
+ <input id="routerUser" placeholder="Username MikroTik">
+ <input id="routerPass" type="password" placeholder="Password MikroTik">
+ <button class="action" onclick="saveRouter()">💾 Simpan Router</button>
+ <h3 style="margin-top:25px">Daftar Router Tersimpan</h3>
+ <div id="routerList"></div>`;
+ renderRouterList();
 }
 
 function saveRouter(){
-    const name = document.getElementById("routerName").value.trim();
-    const ip = document.getElementById("routerIP").value.trim();
-    const port = document.getElementById("routerPort").value.trim() || "8728";
-    const username = document.getElementById("routerUser").value.trim();
-    const password = document.getElementById("routerPass").value;
+ const name=document.getElementById("routerName").value.trim();
+ const ip=document.getElementById("routerIP").value.trim();
+ const port=document.getElementById("routerPort").value.trim()||"8728";
+ const username=document.getElementById("routerUser").value.trim();
+ const password=document.getElementById("routerPass").value;
 
-    if(!name || !ip || !username || !password){
-        alert("Lengkapi semua data router terlebih dahulu.");
-        return;
-    }
+ if(!name||!ip||!username||!password){
+ alert("Lengkapi semua data router.");
+ return;
+ }
 
-    if(selectedRouter >= 0){
-        routers[selectedRouter] = {name,ip,port,username,password};
-        selectedRouter = -1;
-    }else{
-        routers.push({name,ip,port,username,password});
-    }
+ const router={name,ip,port,username,password,status:"Belum dihubungkan"};
 
-    saveRouters();
-    alert("Router berhasil disimpan di perangkat ini.");
-    renderRouter();
+ if(selectedRouter>=0){
+ routers[selectedRouter]=router;
+ selectedRouter=-1;
+ }else{
+ routers.push(router);
+ }
+
+ try{
+ write(KEY,routers);
+ alert("Router berhasil disimpan.");
+ renderRouter();
+ updateStats();
+ }catch(e){
+ alert("Gagal menyimpan data: "+e.message);
+ }
 }
 
 function renderRouterList(){
-    const list = document.getElementById("routerList");
+ const list=document.getElementById("routerList");
+ if(!list)return;
 
-    if(!list) return;
+ if(!routers.length){
+ list.innerHTML="<p>Belum ada router tersimpan.</p>";
+ return;
+ }
 
-    if(routers.length === 0){
-        list.innerHTML = "<p>Belum ada router tersimpan.</p>";
-        return;
-    }
-
-    list.innerHTML = routers.map((r,i)=>`
-    <div class="router-item">
-        <b>${escapeHTML(r.name)}</b>
-        <p>IP: ${escapeHTML(r.ip)}:${escapeHTML(r.port)}</p>
-        <p>Status: <span class="status">Belum dihubungkan</span></p>
-
-        <button class="connect" onclick="connectRouter(${i})">
-        🔗 Hubungkan MikroTik
-        </button>
-
-        <button class="secondary" onclick="editRouter(${i})">
-        ✏️ Edit
-        </button>
-
-        <button class="danger" onclick="deleteRouter(${i})">
-        🗑️ Hapus
-        </button>
-    </div>
-    `).join("");
+ list.innerHTML=routers.map((r,i)=>`
+ <div class="router-item">
+ <b>${escapeHTML(r.name)}</b>
+ <p>IP: ${escapeHTML(r.ip)}:${escapeHTML(r.port)}</p>
+ <p>Status: <span class="status" id="status${i}">${escapeHTML(r.status||"Belum dihubungkan")}</span></p>
+ <button class="connect" onclick="connectRouter(${i})">🔗 Hubungkan MikroTik</button>
+ <button class="secondary" onclick="editRouter(${i})">✏️ Edit</button>
+ <button class="danger" onclick="deleteRouter(${i})">🗑️ Hapus</button>
+ </div>`).join("");
 }
 
 function editRouter(i){
-    const r = routers[i];
-    selectedRouter = i;
-
-    renderRouter();
-
-    document.getElementById("routerName").value = r.name;
-    document.getElementById("routerIP").value = r.ip;
-    document.getElementById("routerPort").value = r.port;
-    document.getElementById("routerUser").value = r.username;
-    document.getElementById("routerPass").value = r.password;
+ const r=routers[i];
+ selectedRouter=i;
+ renderRouter();
+ document.getElementById("routerName").value=r.name;
+ document.getElementById("routerIP").value=r.ip;
+ document.getElementById("routerPort").value=r.port;
+ document.getElementById("routerUser").value=r.username;
+ document.getElementById("routerPass").value=r.password;
 }
 
 function deleteRouter(i){
-    if(!confirm("Hapus router ini?")) return;
-
-    routers.splice(i,1);
-    selectedRouter = -1;
-    saveRouters();
-    renderRouter();
+ if(!confirm("Yakin ingin menghapus router "+routers[i].name+"?"))return;
+ routers.splice(i,1);
+ selectedRouter=-1;
+ write(KEY,routers);
+ renderRouter();
+ updateStats();
+ alert("Router berhasil dihapus.");
 }
 
 async function connectRouter(i){
-    const r = routers[i];
+ const r=routers[i];
+ const status=document.getElementById("status"+i);
+ status.textContent="Menghubungkan...";
+ document.getElementById("appStatus").textContent="Menghubungkan";
 
-    alert(
-        "Data router ditemukan: " + r.name +
-        "\n\nUntuk koneksi MikroTik sungguhan diperlukan backend/API server. " +
-        "Aplikasi HTML saja belum dapat mengakses RouterOS API secara langsung."
-    );
+ try{
+ // Endpoint ini harus disediakan oleh backend server.
+ const response=await fetch("/api/router/test",{
+ method:"POST",
+ headers:{"Content-Type":"application/json"},
+ body:JSON.stringify({
+ id:i,
+ name:r.name,
+ ip:r.ip,
+ port:r.port,
+ username:r.username,
+ password:r.password
+ })
+ });
+
+ const result=await response.json();
+
+ if(!response.ok||!result.success){
+ throw new Error(result.message||"Koneksi gagal");
+ }
+
+ routers[i].status="Terhubung";
+ write(KEY,routers);
+ status.textContent="Terhubung";
+ document.getElementById("appStatus").textContent="Terhubung";
+ alert("Berhasil terhubung ke MikroTik "+r.name);
+ }catch(e){
+ routers[i].status="Gagal terhubung";
+ write(KEY,routers);
+ status.textContent="Gagal terhubung";
+ document.getElementById("appStatus").textContent="Offline";
+ alert("Koneksi gagal: "+e.message+
+ "\n\nPastikan backend API sudah aktif dan router dapat dijangkau.");
+ }
 }
 
 /* PELANGGAN */
 
 function addCustomer(){
-    const name = document.getElementById("customerName").value.trim();
-    const phone = document.getElementById("customerPhone").value.trim();
-    const address = document.getElementById("customerAddress").value.trim();
+ const name=document.getElementById("cName").value.trim();
+ const phone=document.getElementById("cPhone").value.trim();
+ const address=document.getElementById("cAddress").value.trim();
 
-    if(!name || !phone){
-        alert("Nama dan nomor HP wajib diisi.");
-        return;
-    }
+ if(!name||!phone){alert("Nama dan nomor HP wajib diisi.");return}
 
-    let data = JSON.parse(localStorage.getItem("wifi_customers") || "[]");
-    data.push({name,phone,address});
-    localStorage.setItem("wifi_customers",JSON.stringify(data));
-
-    document.getElementById("customerName").value = "";
-    document.getElementById("customerPhone").value = "";
-    document.getElementById("customerAddress").value = "";
-
-    renderCustomers();
-    alert("Pelanggan berhasil disimpan.");
+ const data=read("wifi_customers",[]);
+ data.push({name,phone,address});
+ write("wifi_customers",data);
+ renderCustomers();
+ updateStats();
+ alert("Pelanggan berhasil disimpan.");
 }
 
 function renderCustomers(){
-    const list = document.getElementById("customerList");
-    if(!list) return;
+ const list=document.getElementById("customerList");
+ if(!list)return;
+ const data=read("wifi_customers",[]);
+ list.innerHTML=data.map((c,i)=>`
+ <div class="router-item">
+ <b>${escapeHTML(c.name)}</b>
+ <p>${escapeHTML(c.phone)}</p>
+ <p>${escapeHTML(c.address)}</p>
+ <button class="danger" onclick="deleteCustomer(${i})">Hapus</button>
+ </div>`).join("");
+}
 
-    const data = JSON.parse(localStorage.getItem("wifi_customers") || "[]");
-    document.getElementById("customers").textContent = data.length;
+function deleteCustomer(i){
+ if(!confirm("Hapus pelanggan ini?"))return;
+ const data=read("wifi_customers",[]);
+ data.splice(i,1);
+ write("wifi_customers",data);
+ renderCustomers();
+ updateStats();
+}
 
-    list.innerHTML = data.map(c=>`
-        <div class="router-item">
-        <b>${escapeHTML(c.name)}</b>
-        <p>${escapeHTML(c.phone)}</p>
-        <p>${escapeHTML(c.address)}</p>
-        </div>
-    `).join("");
+/* VOUCHER */
+
+function saveVoucher(){
+ const profile=document.getElementById("vProfile").value.trim();
+ const jumlah=Number(document.getElementById("vJumlah").value);
+ const harga=Number(document.getElementById("vHarga").value);
+
+ if(!profile||jumlah<1||!harga){
+ alert("Lengkapi data voucher.");
+ return;
+ }
+
+ const data=read("wifi_vouchers",[]);
+ data.push({profile,jumlah,harga});
+ write("wifi_vouchers",data);
+ updateStats();
+ renderVouchers();
+ alert("Data voucher berhasil disimpan. Pembuatan akun di MikroTik memerlukan backend.");
+}
+
+function renderVouchers(){
+ const list=document.getElementById("voucherList");
+ if(!list)return;
+ const data=read("wifi_vouchers",[]);
+ list.innerHTML=data.map(v=>`
+ <div class="router-item">
+ <b>${escapeHTML(v.profile)}</b>
+ <p>Jumlah: ${v.jumlah} | Harga: ${v.harga}</p>
+ </div>`).join("");
 }
 
 /* PETA */
 
 function saveLocation(){
-    const lat = document.getElementById("latitude").value.trim();
-    const lon = document.getElementById("longitude").value.trim();
+ const lat=document.getElementById("latitude").value.trim();
+ const lon=document.getElementById("longitude").value.trim();
 
-    if(!lat || !lon){
-        alert("Masukkan latitude dan longitude.");
-        return;
-    }
+ if(!lat||!lon||!Number.isFinite(Number(lat))||!Number.isFinite(Number(lon))){
+ alert("Masukkan koordinat yang benar.");
+ return;
+ }
 
-    localStorage.setItem("wifi_location",JSON.stringify({lat,lon}));
-
-    document.getElementById("mapResult").innerHTML =
-    `<p>Lokasi tersimpan: ${escapeHTML(lat)}, ${escapeHTML(lon)}</p>
-    <a style="color:#35b9ff" target="_blank"
-    href="https://www.google.com/maps?q=${encodeURIComponent(lat)},${encodeURIComponent(lon)}">
-    Buka Google Maps</a>`;
-
-    alert("Lokasi berhasil disimpan.");
+ write("wifi_location",{lat,lon});
+ document.getElementById("mapResult").innerHTML=`
+ <p>Lokasi tersimpan: ${escapeHTML(lat)}, ${escapeHTML(lon)}</p>
+ <a style="color:#35b9ff" target="_blank" rel="noopener"
+ href="https://www.google.com/maps?q=${encodeURIComponent(lat)},${encodeURIComponent(lon)}">Buka Google Maps</a>`;
+ alert("Lokasi berhasil disimpan.");
 }
 
 /* PENGATURAN */
 
 function saveSettings(){
-    const name = document.getElementById("newAppName").value.trim();
-
-    if(!name){
-        alert("Masukkan nama aplikasi.");
-        return;
-    }
-
-    localStorage.setItem("wifi_app_name",name);
-    document.getElementById("appTitle").textContent = name;
-    alert("Nama aplikasi berhasil disimpan.");
+ const name=document.getElementById("newAppName").value.trim();
+ if(!name){alert("Masukkan nama aplikasi.");return}
+ localStorage.setItem("wifi_app_name",name);
+ document.getElementById("appTitle").textContent=name;
+ alert("Nama aplikasi berhasil diubah.");
 }
 
 /* AI */
 
-function sendAI(){
-    const request = document.getElementById("aiRequest").value.trim();
+async function sendAI(){
+ const request=document.getElementById("aiRequest").value.trim();
+ const result=document.getElementById("aiResult");
+ if(!request){alert("Tuliskan permintaan.");return}
 
-    if(!request){
-        alert("Tuliskan permintaan terlebih dahulu.");
-        return;
-    }
-
-    document.getElementById("aiResult").textContent =
-    "Permintaan disiapkan. Fitur AI Developer memerlukan backend online dan API AI.";
+ result.textContent="Mengirim permintaan...";
+ try{
+ const response=await fetch("/api/ai/request",{
+ method:"POST",
+ headers:{"Content-Type":"application/json"},
+ body:JSON.stringify({request})
+ });
+ const data=await response.json();
+ if(!response.ok)throw new Error(data.message||"Server AI belum tersedia");
+ result.textContent=data.message||"Permintaan diterima.";
+ }catch(e){
+ result.textContent="AI belum terhubung: "+e.message;
+ }
 }
 
 function escapeHTML(value){
-    return String(value ?? "").replace(/[&<>"']/g, c => ({
-        "&":"&amp;",
-        "<":"&lt;",
-        ">":"&gt;",
-        '"':"&quot;",
-        "'":"&#39;"
-    })[c]);
+ return String(value??"").replace(/[&<>"']/g,c=>({
+ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ })[c]);
 }
-
-/* MULAI APLIKASI */
 
 loadRouters();
-
-const savedName = localStorage.getItem("wifi_app_name");
-if(savedName){
-    document.getElementById("appTitle").textContent = savedName;
-}
+const savedName=localStorage.getItem("wifi_app_name");
+if(savedName)document.getElementById("appTitle").textContent=savedName;
 </script>
-
 </body>
 </html>
