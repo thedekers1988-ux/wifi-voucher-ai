@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WIFI VOUCHER AI</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b1220;color:#fff;font-family:Arial,sans-serif}
+header{background:#13233b;padding:22px 18px;border-bottom:1px solid #263954}
+h2{margin:0;color:#35b9ff}
+header p{margin:7px 0 0;color:#a9bdd5;font-size:13px}
+main{padding:16px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card{background:#172941;border:1px solid #29415e;border-radius:13px;padding:17px;margin-bottom:12px}
+.card small{color:#a9bdd5}
+.number{font-size:27px;font-weight:bold;margin-top:9px}
+h3{font-size:16px;margin:0 0 13px}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{border:0;border-radius:10px;padding:15px 8px;background:#1769c2;color:white;font-weight:bold;font-size:14px}
+button:active{background:#0e4e91}
+#page{margin-top:15px}
+input{width:100%;padding:13px;margin:7px 0 12px;border-radius:8px;border:1px solid #38516e;background:#0c192a;color:white}
+.action{width:100%;background:#087eae}
+footer{text-align:center;color:#71849b;font-size:12px;padding:20px}
+</style>
+</head>
+<body>
+<header>
+<h2>WIFI VOUCHER AI</h2>
+<p>Manajemen Hotspot MikroTik</p>
+</header>
+<main>
+<div class="stats">
+<div class="card"><small>Router</small><div class="number" id="routers">0</div></div>
+<div class="card"><small>Voucher</small><div class="number" id="vouchers">0</div></div>
+<div class="card"><small>Pelanggan</small><div class="number" id="customers">0</div></div>
+<div class="card"><small>Status</small><div class="number" style="font-size:18px">Siap</div></div>
+</div>
+
+<div class="card">
+<h3>Menu Utama</h3>
+<div class="menu">
+<button onclick="showPage('router')">📡 Router MikroTik</button>
+<button onclick="showPage('voucher')">🎟️ Voucher</button>
+<button onclick="showPage('customer')">👥 Pelanggan</button>
+<button onclick="showPage('map')">🗺️ Peta Pelanggan</button>
+<button onclick="showPage('ai')">🤖 AI Developer</button>
+<button onclick="showPage('settings')">⚙️ Pengaturan</button>
+</div>
+</div>
+<div class="card" id="page">
+<h3>Selamat Datang</h3>
+<p>WIFI VOUCHER AI siap digunakan.</p>
+<p>Tambahkan router MikroTik untuk memulai pengelolaan WiFi.</p>
+</div>
+</main>
+<footer>WIFI VOUCHER AI • Versi 1.0</footer>
+<script>
+function showPage(page){
+const box=document.getElementById('page');
+const data={
+router:['Router MikroTik','Nama Router','Alamat IP','Port API','Username','Password','Simpan Router'],
+voucher:['Manajemen Voucher','Nama Voucher','Profile Hotspot','Jumlah Voucher','Harga','Buat Voucher'],
+customer:['Data Pelanggan','Nama Pelanggan','Nomor HP','Alamat Pelanggan','Tambah Pelanggan'],
+map:['Peta Pelanggan','Koordinat Latitude','Koordinat Longitude','Simpan Lokasi'],
+ai:['AI Developer Online','Tuliskan perubahan aplikasi yang Anda inginkan','Kirim Permintaan'],
+settings:['Pengaturan','Nama Aplikasi','Simpan Pengaturan']
+};
+const d=data[page];
+let html='<h3>'+d[0]+'</h3>';
+for(let i=1;i<d.length-1;i++){
+html+='<input placeholder="'+d[i]+'" />';
+}
+html+='<button class="action" onclick="alert(\'Fitur ini akan dihubungkan ke sistem berikutnya.\')">'+d[d.length-1]+'</button>';
+box.innerHTML=html;
+}
+</script>
+</body>
+</html>
